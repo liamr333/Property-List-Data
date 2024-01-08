@@ -15,7 +15,6 @@ CREATE TABLE Prop_List (
     FOREIGN KEY (Prop_List_Creator) REFERENCES Analyst (Analyst_Name)
 );
 
-
 CREATE TABLE Property (
     Prop_ID VARCHAR (40) NOT NULL,
     Prop_County VARCHAR(40) NOT NULL,
