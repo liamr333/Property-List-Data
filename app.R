@@ -1,192 +1,14 @@
 library(shiny)
 library(bslib)
 library(shinyWidgets)
-library(RMySQL)
 
-
-# your database name here
-database_name = '' 
-
-# your password here
-password = ''
-
-analysts <- function() {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query_result <- dbSendQuery(mysqlconnection, "select * from analyst")
-  df <- fetch(query_result, n = -1)
-  dbDisconnect(mysqlconnection)
-  df$Analyst_Name
-}
-
-properties <- function() {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query_result <- dbSendQuery(mysqlconnection, "select prop_id from property")
-  df <- fetch(query_result, n = -1)
-  dbDisconnect(mysqlconnection)
-  df$prop_id
-}
-
-
-get_lists_from_analysts <- function(analyst) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("select list_name from list where list_creator = \'", analyst, "\'")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  dbDisconnect(mysqlconnection)
-  df$list_name
-}
-
-
-get_properties_from_list <- function(list_name) {
-  # for our example, we are pretending this is a list selector in the Bexar county dashboard
-  county = "Bexar"
-  
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("select property.prop_id from list inner join entry on list.list_name = entry.entry_list_name inner join property on property.prop_id = entry.entry_prop_id where list.list_name = \'",
-                  list_name, "\' and property.prop_county = \'", county, "\'")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  dbDisconnect(mysqlconnection)
-  df$prop_id
-}
-
-
-analyst_exists <- function(analyst_name) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("select * from analyst where analyst_name = \'", analyst_name, "\'")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  dbDisconnect(mysqlconnection)
-  nrow(df) > 0
-}
-
-
-add_analyst <- function(analyst_name) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("insert into analyst (analyst_name) values (\'", analyst_name, "\')")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  dbDisconnect(mysqlconnection)
-}
-
-list_exists <- function(list_name) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("select * from list where list_name = \'", list_name, "\'")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  dbDisconnect(mysqlconnection)
-  nrow(df) > 0
-}
-
-add_list <- function(list_creator, list_name, list_description) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("insert into list (list_name, list_creator, list_description) values (\'", list_name, "\', \'", list_creator, "\', \'", list_description, "\')")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  print(df)
-  dbDisconnect(mysqlconnection)
-}
-
-entry_exists <- function(entry_list_name, entry_prop_id) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("select * from entry where entry_list_name = \'", entry_list_name, "\' and entry_prop_id = \'", entry_prop_id, "\'")
-  print(query)
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  print(df)
-  dbDisconnect(mysqlconnection)
-  nrow(df) > 0
-}
-
-add_entry <- function(entry_list_name, entry_prop_id) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("insert into entry (entry_list_name, entry_prop_id) values (\'", entry_list_name, "\', \'", entry_prop_id, "\')")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  print(df)
-  dbDisconnect(mysqlconnection)
-}
-
-delete_entry <- function(entry_list_name, entry_prop_id) {
-  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
-                               dbname=database_name, 
-                               host='localhost', 
-                               port=3306, 
-                               user='root', 
-                               password=password)
-  
-  query <- paste0("delete from entry where entry_list_name = \'", entry_list_name, "\' and entry_prop_id = \'", entry_prop_id, "\'")
-  query_result <- dbSendQuery(mysqlconnection, query)
-  df <- fetch(query_result, n = -1)
-  print(df)
-  dbDisconnect(mysqlconnection)
-}
+source('database.R')
 
 ui <- fluidPage(
   
   theme = bs_theme(version = 5, font_scale = 0.8),
   
-  h1(id="title", "Bexar County Mockup Property List Selector"),
+  h1(id="title", "Harris County Mockup Property List Selector"),
   tags$style(HTML("#title{font-size: 40px; text-align: center;}")),
   br(),
   br(),
@@ -472,7 +294,7 @@ server <- function(input, output, session) {
     
     updateVirtualSelect(session = session,
                         inputId = "select_list_for_adding_prop",
-                        choices = get_lists_from_analysts(input$select_analyst),
+                        choices = get_lists_from_analysts(input$select_analyst_for_adding_prop_to_list),
                         selected = list()
     )
     
@@ -494,9 +316,11 @@ server <- function(input, output, session) {
       for (property in input$select_properties) {
         if (entry_exists(input$select_list_for_adding_prop, property)) {
           warning_message <- paste0(warning_message, "Entry exists for property id ", property, " in the list ", input$select_list_for_adding_prop, "<br/>")
+          output$adding_property_warning <- renderText({warning_message})
         } else {
-          add_entry(input$select_list_for_adding_prop, input$select_properties)
+          add_entry(input$select_list_for_adding_prop, property)
           warning_message <- paste0(warning_message, "Added property ", property, " to ", input$select_list_for_adding_prop, "<br/>")
+          output$adding_property_warning <- renderText({warning_message})
         }
       }
       output$adding_property_warning <- renderText({warning_message})
@@ -519,8 +343,10 @@ server <- function(input, output, session) {
         if (entry_exists(input$select_list_for_adding_prop, property)) {
           delete_entry(input$select_list_for_adding_prop, property)
           warning_message <- paste0(warning_message, "Property ", property, " deleted from list ", input$select_list_for_adding_prop, "<br/>")
+          output$adding_property_warning <- renderText({warning_message})
         } else {
           warning_message <- paste0(warning_message, "Property ", property, " not found in list ", input$select_list_for_adding_prop, "<br/>")
+          output$adding_property_warning <- renderText({warning_message})
         }
       }
       output$adding_property_warning <- renderText({warning_message})
