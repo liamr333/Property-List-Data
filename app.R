@@ -4,6 +4,7 @@ library(shinyWidgets)
 
 source('database.R')
 
+
 ui <- fluidPage(
   
   theme = bs_theme(version = 5, font_scale = 0.8),
@@ -200,7 +201,7 @@ server <- function(input, output, session) {
     
     updateVirtualSelect(session = session,
                       inputId = "select_list",
-                      choices = get_lists_from_analysts(input$select_analyst),
+                      choices = get_lists_from_analyst(input$select_analyst),
                       selected = list()
                       )
 
@@ -256,17 +257,25 @@ server <- function(input, output, session) {
   observeEvent(input$add_list, {
     
     if (list_exists(input$list_name)) {
+      
       warning_message <- paste0("List ", input$list_name, " already exists")
       output$adding_list_warning <- renderText({warning_message})
+      
     } else if (input$list_name ==  "") {
+      
       warning_message <- "Please add a list name"
       output$adding_list_warning <- renderText({warning_message})
+      
     } else if (input$list_description == "") {
+      
       warning_message <- "Please add a description"
       output$adding_list_warning <- renderText({warning_message})
+      
     } else {
+      
       add_list(input$select_analyst_for_list_creation, input$list_name, input$list_description)
       output$adding_list_warning <- renderText({"List added"})
+      
       
       # update the select list in the first row if it has the same analyst name selected
       # very minor touch but I think it makes it work smoother
@@ -274,13 +283,13 @@ server <- function(input, output, session) {
         
         updateVirtualSelect(session = session,
                             inputId = "select_list",
-                            choices = get_lists_from_analysts(input$select_analyst),
+                            choices = get_lists_from_analyst(input$select_analyst),
                             selected = list()
         )
         
         updateVirtualSelect(session = session,
                             inputId = "select_list_for_adding_prop",
-                            choices = get_lists_from_analysts(input$select_analyst),
+                            choices = get_lists_from_analyst(input$select_analyst),
                             selected = list()
         )
         
@@ -294,7 +303,7 @@ server <- function(input, output, session) {
     
     updateVirtualSelect(session = session,
                         inputId = "select_list_for_adding_prop",
-                        choices = get_lists_from_analysts(input$select_analyst_for_adding_prop_to_list),
+                        choices = get_lists_from_analyst(input$select_analyst_for_adding_prop_to_list),
                         selected = list()
     )
     
@@ -306,24 +315,48 @@ server <- function(input, output, session) {
     
     
     if (input$select_list_for_adding_prop == "") {
+      
       warning_message <- "Please select a list"
       output$adding_property_warning <- renderText({warning_message})
+      
     } else if (is.null(input$select_properties)) {
+      
       warning_message <- "Please select at least one property to add"
       output$adding_property_warning <- renderText({warning_message})
+      
     } else {
+      
+      num_properties_in_list <- get_num_properties_in_list(input$select_list_for_adding_prop)
+      print(num_properties_in_list)
       warning_message <- ""
+      
       for (property in input$select_properties) {
+        
         if (entry_exists(input$select_list_for_adding_prop, property)) {
+          
           warning_message <- paste0(warning_message, "Entry exists for property id ", property, " in the list ", input$select_list_for_adding_prop, "<br/>")
           output$adding_property_warning <- renderText({warning_message})
+          
         } else {
+          
+          if (num_properties_in_list > 100) {
+            
+            warning_message <- paste0(warning_message, "Couldn't add property ", property, ". List length cannot exceed 100 properties")
+            break
+            
+          }
+          
           add_entry(input$select_list_for_adding_prop, property)
+          num_properties_in_list <- num_properties_in_list + 1
           warning_message <- paste0(warning_message, "Added property ", property, " to ", input$select_list_for_adding_prop, "<br/>")
           output$adding_property_warning <- renderText({warning_message})
+          
         }
+        
       }
+      
       output$adding_property_warning <- renderText({warning_message})
+      
     }
     
   })
@@ -332,24 +365,38 @@ server <- function(input, output, session) {
   observeEvent(input$delete_property_from_list, {
     
     if (input$select_list_for_adding_prop == "") {
+      
       warning_message <- "Please select a list"
       output$adding_property_warning <- renderText({warning_message})
+      
     } else if (is.null(input$select_properties)) {
+      
       warning_message <- "Please select at least one property to add"
       output$adding_property_warning <- renderText({warning_message})
+      
     } else {
+      
       warning_message <- ""
+      
       for (property in input$select_properties) {
+        
         if (entry_exists(input$select_list_for_adding_prop, property)) {
+          
           delete_entry(input$select_list_for_adding_prop, property)
           warning_message <- paste0(warning_message, "Property ", property, " deleted from list ", input$select_list_for_adding_prop, "<br/>")
           output$adding_property_warning <- renderText({warning_message})
+          
         } else {
+          
           warning_message <- paste0(warning_message, "Property ", property, " not found in list ", input$select_list_for_adding_prop, "<br/>")
           output$adding_property_warning <- renderText({warning_message})
+          
         }
+        
       }
+      
       output$adding_property_warning <- renderText({warning_message})
+      
     }
     
   })
