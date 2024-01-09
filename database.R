@@ -1,8 +1,8 @@
 library(RMySQL)
 
-database_name = '' # your database name here
-endpoint = '' # your endpoint (or host name) here
-password = '' # your password here
+database_name = 'propdblist1'
+endpoint = 'property-list-db-test.cjmg2oceahv0.us-east-1.rds.amazonaws.com'
+password = 'yGBsRPgXnE'
 
 analysts <- function() {
   mysqlconnection <- dbConnect(RMySQL::MySQL(), 
@@ -34,7 +34,7 @@ properties <- function() {
 }
 
 
-get_lists_from_analysts <- function(analyst) {
+get_lists_from_analyst <- function(analyst) {
   mysqlconnection <- dbConnect(RMySQL::MySQL(), 
                                dbname=database_name, 
                                host=endpoint, 
@@ -46,7 +46,6 @@ get_lists_from_analysts <- function(analyst) {
   query_result <- dbSendQuery(mysqlconnection, query)
   df <- fetch(query_result, n = -1)
   dbDisconnect(mysqlconnection)
-  print(df$list)
   df$Prop_List_Name
 }
 
@@ -139,7 +138,6 @@ entry_exists <- function(entry_list_name, entry_prop_id) {
                                password=password)
   
   query <- paste0("select * from PROP_LISTS.Entry where Entry_List_Name = \'", entry_list_name, "\' and Entry_Prop_ID = \'", entry_prop_id, "\'")
-  print(query)
   query_result <- dbSendQuery(mysqlconnection, query)
   df <- fetch(query_result, n = -1)
   dbDisconnect(mysqlconnection)
@@ -155,7 +153,6 @@ add_entry <- function(entry_list_name, entry_prop_id) {
                                password=password)
   
   query <- paste0("insert into PROP_LISTS.Entry (Entry_List_Name, Entry_Prop_ID) values (\'", entry_list_name, "\', \'", entry_prop_id, "\')")
-  # print(query)
   query_result <- dbSendQuery(mysqlconnection, query)
   df <- fetch(query_result, n = -1)
   dbDisconnect(mysqlconnection)
@@ -172,6 +169,20 @@ delete_entry <- function(entry_list_name, entry_prop_id) {
   query <- paste0("delete from PROP_LISTS.Entry where Entry_List_Name = \'", entry_list_name, "\' and Entry_Prop_ID = \'", entry_prop_id, "\'")
   query_result <- dbSendQuery(mysqlconnection, query)
   df <- fetch(query_result, n = -1)
-  print(df)
   dbDisconnect(mysqlconnection)
+}
+
+get_num_properties_in_list <- function(list_name) {
+  mysqlconnection <- dbConnect(RMySQL::MySQL(), 
+                               dbname=database_name, 
+                               host=endpoint, 
+                               port=3306, 
+                               user='admin', 
+                               password=password)
+  
+  query <- paste0("select * from PROP_LISTS.Entry where Entry_List_Name = \'", list_name, "\'")
+  query_result <- dbSendQuery(mysqlconnection, query)
+  df <- fetch(query_result, n = -1)
+  dbDisconnect(mysqlconnection)
+  nrow(df)
 }
