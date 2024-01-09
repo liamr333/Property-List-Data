@@ -1,8 +1,8 @@
 library(RMySQL)
 
-database_name = 'propdblist1'
-endpoint = 'property-list-db-test.cjmg2oceahv0.us-east-1.rds.amazonaws.com'
-password = 'yGBsRPgXnE'
+database_name = '' # your database name here
+endpoint = '' # your endpoint here
+password = '' # your password here
 
 analysts <- function() {
   mysqlconnection <- dbConnect(RMySQL::MySQL(), 
