@@ -224,12 +224,17 @@ server <- function(input, output, session) {
   observeEvent(input$add_analyst, {
     
     if (analyst_exists(input$analyst_name)) {
+      
       warning_message <- paste0("Analyst ", input$analyst_name, " already exists")
       output$adding_analyst_warning <- renderText({warning_message})
+      
     } else if (input$analyst_name == "") {
+      
       warning_message <- "Please put an analyst name"
       output$adding_analyst_warning <- renderText({warning_message})
+      
     } else {
+      
       warning_message <- paste0("Analyst ", input$analyst_name, " added")
       output$adding_analyst_warning <- renderText({warning_message})
       add_analyst(input$analyst_name)
