@@ -24,6 +24,7 @@ CREATE TABLE Property (
 CREATE TABLE Entry (
     Entry_List_Name VARCHAR(255) NOT NULL,
     Entry_Prop_ID VARCHAR(255) NOT NULL,
+    Entry_Analyst VARCHAR(255),
     CONSTRAINT Entry_ID PRIMARY KEY (Entry_List_Name, Entry_Prop_ID),
     FOREIGN KEY (Entry_List_Name) REFERENCES Prop_List (Prop_List_Name),
     FOREIGN KEY (Entry_Prop_ID) REFERENCES Property (Prop_ID)
