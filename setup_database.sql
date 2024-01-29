@@ -11,7 +11,7 @@ CREATE TABLE Prop_List (
     Prop_List_Name VARCHAR(255) NOT NULL,
     Prop_List_Creator VARCHAR(255) NOT NULL,
     Prop_List_Description VARCHAR(255),
-    PRIMARY KEY (Prop_List_Name),
+    PRIMARY KEY (Prop_List_Name, Prop_List_Creator),
     FOREIGN KEY (Prop_List_Creator) REFERENCES Analyst (Analyst_Name)
 );
 
